@@ -8,6 +8,12 @@ router.get("/", function (req, res, next) {
   res.send("respond with a resource");
 });
 
+router.get("/getTweets", (req, res) => {
+  Tweet.find()
+    .populate()
+    .then((data) => res.json({ result: true, tweets: data }));
+});
+
 router.post("/newTweet", (req, res) => {
   if (!checkBody(req.body, ["tweetContent"])) {
     res.json({ result: false, error: "missing or empty fields" });
