@@ -10,7 +10,7 @@ router.get("/", function (req, res, next) {
 
 router.get("/getTweets", (req, res) => {
   Tweet.find()
-    .populate()
+    .populate("user")
     .then((data) => res.json({ result: true, tweets: data }));
 });
 
