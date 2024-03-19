@@ -15,7 +15,7 @@ router.get("/getTweets/:token", async (req, res) => {
     res.json({ result: false, error: "user not found" });
     return;
   }
-  const tweets = await Tweet.find().populate("user");
+  const tweets = await Tweet.find().populate("user").populate("tag");
   const modifiedTweets = tweets.map((tweet) => {
     const liked = tweet.likes.includes(user._id);
     return {
