@@ -39,17 +39,19 @@ router.post("/newTweet", async (req, res) => {
       res.json({ result: false, error: "user not found" });
       return;
     }
-
+    let tagDoc;
     let tagId = null;
     if (tag) {
       console.log("im here");
-      let tagDoc = await Tag.findOne({ name: tag });
+      tagDoc = await Tag.findOne({ name: tag });
+      console.log("tagdoc is", tagDoc);
       if (!tagDoc) {
         console.log("im here again");
         tagDoc = await new Tag({
           name: tag,
         });
         await tagDoc.save();
+        console.log("tagdoc is", tagDoc);
       }
       tagId = tagDoc._id;
     }
