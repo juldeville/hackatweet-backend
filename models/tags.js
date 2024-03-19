@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const tagSchema = mongoose.Schema({
   name: String,
-  tweets: Number,
+  tweets: [{ type: mongoose.Schema.Types.ObjectId, ref: "tweets" }],
 });
 
 const Tag = mongoose.model("tags", tagSchema);

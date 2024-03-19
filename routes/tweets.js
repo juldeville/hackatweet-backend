@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 const User = require("../models/users");
 const Tweet = require("../models/tweets");
+const Tag = require("../models/tags");
 const { checkBody } = require("../modules/checkBody");
 
 router.get("/", function (req, res, next) {
@@ -25,27 +26,51 @@ router.get("/getTweets/:token", async (req, res) => {
   res.json({ result: true, tweets: modifiedTweets });
 });
 
-router.post("/newTweet", (req, res) => {
-  if (!checkBody(req.body, ["tweetContent"])) {
-    res.json({ result: false, error: "missing or empty fields" });
+router.post("/newTweet", async (req, res) => {
+  if (!checkBody(req.body, ["token", "tweetContent"])) {
+    res.json({ result: false, error: "mising of empty fields" });
     return;
   }
-  if (!checkBody(req.body, ["token"])) {
-    res.json({ result: false, error: "missing token" });
-    return;
-  }
-  User.findOne({ token: req.body.token }).then((data) => {
-    const newTweet = new Tweet({
-      user: data._id,
-      tweetContent: req.body.tweetContent,
+
+  const { tweetContent, tag, token } = req.body;
+  try {
+    const user = await User.findOne({ token: token });
+    if (!user) {
+      res.json({ result: false, error: "user not found" });
+      return;
+    }
+
+    let tagId = null;
+    if (tag) {
+      console.log("im here");
+      let tagDoc = await Tag.findOne({ name: tag });
+      if (!tagDoc) {
+        console.log("im here again");
+        tagDoc = await new Tag({
+          name: tag,
+        });
+        await tagDoc.save();
+      }
+      tagId = tagDoc._id;
+    }
+
+    const newTweet = await new Tweet({
+      user: user._id,
+      tweetContent: tweetContent,
       date: new Date(),
-      tag: req.body.tag,
+      tag: tagId,
+      likeCount: 0,
     });
 
-    newTweet.save().then(() => {
-      res.json({ result: true });
-    });
-  });
+    await newTweet.save();
+    if (tagDoc) {
+      await Tag.updateOne({ _id: tagId }, { $push: { tweets: newTweet._id } });
+    }
+    res.json({ result: true });
+  } catch (error) {
+    console.error(error);
+    res.json({ result: false, error: "error occured" });
+  }
 });
 
 router.post("/handleLike", async (req, res) => {
