@@ -18,9 +18,11 @@ router.get("/getTweets/:token", async (req, res) => {
   const tweets = await Tweet.find().populate("user").populate("tag");
   const modifiedTweets = tweets.map((tweet) => {
     const liked = tweet.likes.includes(user._id);
+    const tweetByUser = tweet.user._id.toString() === user._id.toString();
     return {
       ...tweet.toObject(),
       liked: liked,
+      tweetByUser: tweetByUser,
     };
   });
   res.json({ result: true, tweets: modifiedTweets });
@@ -39,19 +41,16 @@ router.post("/newTweet", async (req, res) => {
       res.json({ result: false, error: "user not found" });
       return;
     }
+
     let tagDoc;
     let tagId = null;
     if (tag) {
-      console.log("im here");
       tagDoc = await Tag.findOne({ name: tag });
-      console.log("tagdoc is", tagDoc);
       if (!tagDoc) {
-        console.log("im here again");
         tagDoc = await new Tag({
           name: tag,
         });
         await tagDoc.save();
-        console.log("tagdoc is", tagDoc);
       }
       tagId = tagDoc._id;
     }
@@ -104,6 +103,27 @@ router.post("/handleLike", async (req, res) => {
     });
   } catch (error) {
     res.json({ result: false, error: error.message });
+  }
+});
+
+router.post("/deleteTweet", async (req, res) => {
+  try {
+    const tweet = await Tweet.findById(req.body.tweetId);
+    const tag = await Tag.findById(tweet.tag);
+    await Tag.updateOne(
+      { _id: tweet.tag },
+      { $pull: { tweets: req.body.tweetId } }
+    );
+    const result = await Tag.findById(tag._id);
+    if (result.tweets.length === 0) {
+      await Tag.deleteOne({ _id: tag._id });
+    }
+    await Tweet.deleteOne({ _id: req.body.tweetId });
+
+    res.json({ result: true });
+  } catch (error) {
+    console.error(error);
+    res.json({ result: false, error: "error occured" });
   }
 });
 
