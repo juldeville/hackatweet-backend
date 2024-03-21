@@ -64,6 +64,12 @@ router.post("/newTweet", async (req, res) => {
     });
 
     await newTweet.save();
+
+    await User.updateOne(
+      { _id: user._id },
+      { $push: { tweets: newTweet._id } }
+    );
+
     if (tagDoc) {
       await Tag.updateOne({ _id: tagId }, { $push: { tweets: newTweet._id } });
     }
