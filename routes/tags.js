@@ -15,9 +15,9 @@ router.get("/getTags", async (req, res) => {
   }
 });
 
-router.get('getTest', (req, res) => {
-  console.log('success')
-  res.json({result: true, sucess: 'dat right'}))
-})
+router.get("getTest", (req, res) => {
+  console.log("success");
+  res.json({ result: true, sucess: "dat right" });
+});
 
 module.exports = router;
