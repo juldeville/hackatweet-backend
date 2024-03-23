@@ -28,6 +28,37 @@ router.get("/getTweets/:token", async (req, res) => {
   res.json({ result: true, tweets: modifiedTweets });
 });
 
+router.post("/getTweetsByTag/:token", async (req, res) => {
+  const user = await User.findOne({ token: req.params.token });
+  if (!user) {
+    res.json({ result: false, error: "user not found" });
+    return;
+  }
+  const tag = await Tag.findOne({ name: req.body.tagName });
+  if (!tag) {
+    res.json({ result: false, error: "no tag found" });
+    return;
+  }
+  const tweetsByTag = await tag.populate({
+    path: "tweets",
+    populate: { path: "user" },
+  });
+
+  const extractedTweets = [...tweetsByTag.tweets];
+
+  const modifiedTweets = extractedTweets.map((tweet) => {
+    const liked = tweet.likes.includes(user._id);
+    const tweetByUser = tweet.user._id.toString() === user._id.toString();
+    return {
+      ...tweet.toObject(),
+      liked: liked,
+      tweetByUser: tweetByUser,
+    };
+  });
+
+  res.json({ result: true, modifiedTweets: modifiedTweets });
+});
+
 router.post("/newTweet", async (req, res) => {
   if (!checkBody(req.body, ["token", "tweetContent"])) {
     res.json({ result: false, error: "mising of empty fields" });
