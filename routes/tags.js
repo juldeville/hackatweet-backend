@@ -1,9 +1,6 @@
 var express = require("express");
 var router = express.Router();
-const User = require("../models/users");
-const Tweet = require("../models/tweets");
 const Tag = require("../models/tags");
-const { checkBody } = require("../modules/checkBody");
 
 router.get("/getTags", async (req, res) => {
   try {
@@ -17,5 +14,10 @@ router.get("/getTags", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+router.get('getTest', (req, res) => {
+  console.log('success')
+  res.json({result: true, sucess: 'dat right'}))
+})
 
 module.exports = router;
