@@ -147,6 +147,10 @@ router.post("/deleteTweet", async (req, res) => {
   try {
     const tweet = await Tweet.findById(req.body.tweetId);
     const tag = await Tag.findById(tweet.tag);
+    if (!tag) {
+      await Tweet.deleteOne({ _id: req.body.tweetId });
+      return res.json({ result: true });
+    }
     await Tag.updateOne(
       { _id: tweet.tag },
       { $pull: { tweets: req.body.tweetId } }
