@@ -14,6 +14,7 @@ router.get("/getTags", async (req, res) => {
     res.json({ result: modifiedTags });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
