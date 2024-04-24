@@ -10,42 +10,35 @@ router.get("/", function (req, res, next) {
   res.send("respond with a resource");
 });
 
-router.post("/signup", async (req, res) => {
-  try {
-    if (!checkBody(req.body, ["firstname", "username", "password"])) {
-      return res
-        .status(400)
-        .json({ result: false, error: "Missing or empty fields" });
-    }
-
-    const existingUser = await User.findOne({ username: req.body.username });
-    if (existingUser) {
-      return res
-        .status(409)
-        .json({ result: false, error: "User already exists" });
-    }
-
-    const hash = bcrypt.hashSync(req.body.password, 10);
-
-    const newUser = new User({
-      firstname: req.body.firstname,
-      username: req.body.username,
-      password: hash,
-      token: uid2(32),
-    });
-
-    await newUser.save();
-    res.json({
-      result: true,
-      token: newUser.token,
-      user: { firstname: newUser.firstname, username: newUser.username },
-    });
-  } catch (error) {
-    console.error("Error during signup:", error);
-    res
-      .status(500)
-      .json({ result: false, error: "An unexpected error occurred" });
-  }
+router.post("/signup", (req, res) => {
+  console.log("its working");
+  res.json({ result: "its working" });
+  // if (!checkBody(req.body, ["firstname", "username", "password"])) {
+  //   res.json({ result: false, error: "missing or empty fields" });
+  //   return;
+  // }
+  // User.findOne({ username: req.body.username }).then((data) => {
+  //   if (data) {
+  //     res.json({ result: false, error: "user already exists" });
+  //   } else if (!data) {
+  //     const hash = bcrypt.hashSync(req.body.password, 10);
+  //     const newUser = new User({
+  //       firstname: req.body.firstname,
+  //       username: req.body.username,
+  //       password: hash,
+  //       token: uid2(32),
+  //     });
+  //     newUser.save().then(() => {
+  //       res.json({
+  //         result: true,
+  //         token: newUser.token,
+  //         user: { firstname: newUser.firstname, username: newUser.username },
+  //       });
+  //     });
+  //   } else {
+  //     res.json({ result: false, error: "error occured" });
+  //   }
+  // });
 });
 
 router.post("/signin", (req, res) => {
